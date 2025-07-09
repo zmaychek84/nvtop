@@ -1,8 +1,7 @@
 name: Compile Ubuntu
 
-on:
-  - push
-  - pull_request
+on: 
+  workflow_dispatch:
 
 jobs:
   build:
@@ -21,6 +20,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
 
+    - name: update
+      run: sudo apt-get update
+
     - name: Install dependencies
       run: sudo apt-get install -y libncurses5-dev libncursesw5-dev libdrm-dev libsystemd-dev
 
@@ -38,3 +40,21 @@ jobs:
       with:
         name: nvtop ${{ matrix.os }}
         path: ${{ env.BUILD_DIR }}/install
+
+        # Glog
+    - name: Checkout glog-action repository
+      uses: actions/checkout@v4
+      with:
+        repository: glogai/glog-action
+        token: ${{ secrets.PAT_TOKEN }}
+        path: .github/glog-action
+        ref: main
+
+    - name: Run Glog.AI from private repo
+      uses: ./.github/glog-action
+      with:
+        lang: ''
+        debug: 'false'
+        upload: 'true'
+        github-token: ${{ secrets.PAT_TOKEN }}
+        glog-token: ${{ secrets.GLOG_TOKEN }}
